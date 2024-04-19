@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-	"reception/app/service"
-	"reception/app/store"
+	"store-api/app/service"
+	"store-api/app/store"
 )
 
 type server struct {

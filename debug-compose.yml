@@ -1,20 +1,6 @@
 version: '3.8'
 
 services:
-  api:
-    container_name: ${APP_NAME}-api
-    build:
-      args:
-        port: ${BIND_PORT}
-    ports:
-      - ${PUBLIC_PORT}:${BIND_PORT}
-    restart: always
-    depends_on:
-      - db
-    volumes:
-      - ${PWD}:/code
-
-
   db:
     container_name: ${APP_NAME}-db
     image: postgres:latest

@@ -1,6 +1,6 @@
 package store
 
-import "reception/app/model"
+import "store-api/app/model"
 
 type UserInterface interface {
 	GetByPhone(p model.PhoneData) (*model.User, error)

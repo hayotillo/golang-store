@@ -1,6 +1,6 @@
 package store
 
-import "reception/app/model"
+import "store-api/app/model"
 
 type VisitInterface interface {
 	Get(f model.VisitOneFilter) (*model.Visit, error)

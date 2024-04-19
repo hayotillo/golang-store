@@ -1,6 +1,6 @@
 package store
 
-import "reception/app/model"
+import "store-api/app/model"
 
 type CustomerInterface interface {
 	Get(f model.CustomerOneFilter) (*model.Customer, error)

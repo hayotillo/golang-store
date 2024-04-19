@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/gorilla/schema"
 	"net/http"
-	"reception/app/model"
+	"store-api/app/model"
 )
 
 func (s *server) handleCustomerGet() http.HandlerFunc {

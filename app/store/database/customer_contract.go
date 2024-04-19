@@ -3,9 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"reception/app/misc"
-	"reception/app/model"
-	"reception/app/store"
+	"store-api/app/misc"
+	"store-api/app/model"
+	"store-api/app/store"
 	"strings"
 )
 

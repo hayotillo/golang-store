@@ -2,7 +2,7 @@ package database
 
 import (
 	"database/sql"
-	"reception/app/store"
+	"store-api/app/store"
 )
 
 type Database struct {

@@ -4,8 +4,8 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/schema"
 	"net/http"
-	"reception/app/model"
-	"reception/app/store"
+	"store-api/app/model"
+	"store-api/app/store"
 	"strings"
 )
 
