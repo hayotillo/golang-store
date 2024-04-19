@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+#  api:
+#    container_name: ${APP_NAME}-api
+#    build:
+#      args:
+#        port: ${BIND_PORT}
+#    ports:
+#      - ${PUBLIC_PORT}:${BIND_PORT}
+#    restart: always
+#    depends_on:
+#      - db
+#    volumes:
+#      - ${PWD}:/code
+
+
+  db:
+    container_name: ${APP_NAME}-db
+    image: postgres:latest
+    restart: always
+    ports:
+      - ${DB_PUBLIC_PORT}:${DB_PORT}
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
+      - ./pgdata:/var/lib/postgresql/data
