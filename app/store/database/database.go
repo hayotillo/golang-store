@@ -10,10 +10,10 @@ type Database struct {
 	per int
 	// user
 	userContract *UserContract
-	// visit
-	visitContract *VisitContract
-	// customer
-	customerContract *CustomerContract
+	// sale
+	saleContract *SaleContract
+	// product
+	productContract *ProductContract
 }
 
 func New(db *sql.DB, per int) *Database {
@@ -29,20 +29,20 @@ func (d *Database) User() store.UserInterface {
 	return d.userContract
 }
 
-// visit
+// sale
 
-func (d *Database) Visit() store.VisitInterface {
-	if d.visitContract == nil {
-		d.visitContract = &VisitContract{database: d}
+func (d *Database) Sale() store.SaleInterface {
+	if d.saleContract == nil {
+		d.saleContract = &SaleContract{database: d}
 	}
-	return d.visitContract
+	return d.saleContract
 }
 
-// customer
+// product
 
-func (d *Database) Customer() store.CustomerInterface {
-	if d.customerContract == nil {
-		d.customerContract = &CustomerContract{database: d}
+func (d *Database) Product() store.ProductInterface {
+	if d.productContract == nil {
+		d.productContract = &ProductContract{database: d}
 	}
-	return d.customerContract
+	return d.productContract
 }

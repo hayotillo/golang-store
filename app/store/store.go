@@ -3,7 +3,7 @@ package store
 type Store interface {
 	User() UserInterface
 
-	Visit() VisitInterface
+	Sale() SaleInterface
 
-	Customer() CustomerInterface
+	Product() ProductInterface
 }

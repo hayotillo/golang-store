@@ -4,6 +4,8 @@ create table if not exists sales
     user_id char(36) not null,
     product_id char(36) not null,
     status varchar(10) not null default 'incoming',
+    price numeric(14) not null default 0,
+    quantity numeric(14) not null default 0,
     description text,
     archive    bool      default false,
     created_at       timestamp    default now(),

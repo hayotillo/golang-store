@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -14,12 +15,12 @@ func (d *IDData) CheckIDData() bool {
 	return len(d.ID) == 36
 }
 
-type CustomerIDData struct {
-	CustomerID string `json:"customer_id,omitempty" schema:"customer_id"`
+type ProductIDData struct {
+	ProductID string `json:"customer_id,omitempty" schema:"customer_id"`
 }
 
-func (d *CustomerIDData) CheckCustomerIDData() bool {
-	return len(d.CustomerID) == 36
+func (d *ProductIDData) CheckProductIDData() bool {
+	return len(d.ProductID) == 36
 }
 
 type DoctorIDData struct {
@@ -126,4 +127,66 @@ type PhoneData struct {
 func (d *PhoneData) CheckPhoneData() bool {
 	l := len(d.Phone)
 	return l == 13 || l == 9
+}
+
+type NameData struct {
+	Name string `json:"name,omitempty" schema:"name"`
+}
+
+func (d *NameData) CheckNameData() bool {
+	return len(d.Name) > 0
+}
+
+type PriceData struct {
+	Price string `json:"price,omitempty" schema:"price"`
+}
+
+func (d *PriceData) CheckPriceData() bool {
+	if len(d.Price) > 0 {
+		_, err := strconv.ParseFloat(d.Price, 32)
+		if err != nil {
+			fmt.Println("price data error", err)
+		}
+
+		if err == nil {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *PriceData) PriceInt() int {
+	var res int
+	if len(d.Price) > 0 {
+		p, err := strconv.Atoi(d.Price)
+		if err != nil {
+			fmt.Println("error price parse", err)
+		} else {
+			res = p
+		}
+	}
+
+	return res
+}
+
+type QuantityData struct {
+	Quantity string `json:"quantity,omitempty" schema:"quantity"`
+}
+
+func (d *QuantityData) QuantityInt() int {
+	var res int
+	if len(d.Quantity) > 0 {
+		p, err := strconv.Atoi(d.Quantity)
+		if err != nil {
+			fmt.Println("error quantity parse", err)
+		} else {
+			res = p
+		}
+	}
+
+	return res
+}
+
+func (d *QuantityData) CheckQuantityData() bool {
+	return len(d.Quantity) > 0
 }

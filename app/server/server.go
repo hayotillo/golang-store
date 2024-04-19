@@ -45,17 +45,16 @@ func (s *server) init() {
 	user.HandleFunc("/delete", s.handleUserDelete()).Methods("POST")
 	// visit
 	visit := private.PathPrefix("/visit").Subrouter()
-	visit.HandleFunc("/one", s.handleVisitOne()).Methods("POST")
-	visit.HandleFunc("/list", s.handleVisitList()).Methods("POST")
-	visit.HandleFunc("/save", s.handleVisitSave()).Methods("POST")
-	visit.HandleFunc("/delete", s.handleVisitDelete()).Methods("POST")
-	// customer
-	customer := private.PathPrefix("/customer").Subrouter()
-	customer.HandleFunc("/get", s.handleCustomerGet()).Methods("POST")
-	customer.HandleFunc("/one", s.handleCustomerOne()).Methods("POST")
-	customer.HandleFunc("/list", s.handleCustomerList()).Methods("POST")
-	customer.HandleFunc("/save", s.handleCustomerSave()).Methods("POST")
-	customer.HandleFunc("/delete", s.handleCustomerDelete()).Methods("POST")
+	visit.HandleFunc("/one", s.handleSaleOne()).Methods("POST")
+	visit.HandleFunc("/list", s.handleSaleList()).Methods("POST")
+	visit.HandleFunc("/save", s.handleSaleSave()).Methods("POST")
+	visit.HandleFunc("/delete", s.handleSaleDelete()).Methods("POST")
+	// product
+	product := private.PathPrefix("/product").Subrouter()
+	product.HandleFunc("/one", s.handleProductOne()).Methods("POST")
+	product.HandleFunc("/list", s.handleProductList()).Methods("POST")
+	product.HandleFunc("/save", s.handleProductSave()).Methods("POST")
+	product.HandleFunc("/delete", s.handleProductDelete()).Methods("POST")
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
