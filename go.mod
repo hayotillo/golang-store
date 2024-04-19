@@ -1,4 +1,4 @@
-module storage-api
+module store-api
 
 go 1.20
 

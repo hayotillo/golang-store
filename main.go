@@ -9,10 +9,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"storage-api/app/model"
-	"storage-api/app/server"
-	"storage-api/app/service"
-	"storage-api/app/store/database"
+	"store-api/app/model"
+	"store-api/app/server"
+	"store-api/app/service"
+	"store-api/app/store/database"
 	"strconv"
 )
 
