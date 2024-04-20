@@ -21,21 +21,19 @@ func (s *SaleContract) Get(f model.SaleOneFilter) (*model.Sale, error) {
 
 	query := `SELECT
     	s.id,
-    	s.status,
     	s.description,
     	s.archive,
-    	p.id,
-    	p.name,
     	u.id,
     	u.full_name,
     	u.phone,
     	u.status,
     	s.created_at,
-    	s.updated_at
+    	s.updated_at,
+    	sum(sp.price)
 	FROM sales s
-		JOIN products p on p.id = s.product_id
 		JOIN users u on u.id = s.user_id
-	WHERE p.id=$1`
+		JOIN sale_products sp on s.id = sp.sale_id
+	WHERE s.id=$1 GROUP BY s.id, u.id`
 
 	row := s.database.db.QueryRow(query, f.ID)
 	err := row.Err()
@@ -45,17 +43,15 @@ func (s *SaleContract) Get(f model.SaleOneFilter) (*model.Sale, error) {
 	var description sql.NullString
 	row.Scan(
 		&m.ID,
-		&m.Status,
 		&description,
 		&m.Archive,
-		&m.Product.ID,
-		&m.Product.Name,
 		&m.User.ID,
 		&m.User.FullName,
 		&m.User.Phone,
 		&m.User.Status,
 		&m.CreatedAt,
 		&m.UpdatedAt,
+		&m.Price,
 	)
 	m.Description = description.String
 
@@ -71,10 +67,6 @@ func (s *SaleContract) One(f model.SaleOneFilter) (*model.SaleData, error) {
 	query := `SELECT
     	s.id,
     	s.user_id,
-    	s.product_id,
-    	s.status,
-    	s.price,
-    	s.quantity,
     	s.description,
     	s.archive,
     	s.created_at,
@@ -90,10 +82,6 @@ func (s *SaleContract) One(f model.SaleOneFilter) (*model.SaleData, error) {
 	row.Scan(
 		&m.ID,
 		&m.UserID,
-		&m.ProductID,
-		&m.Status,
-		&m.Price,
-		&m.Quantity,
 		&description,
 		&m.Archive,
 		&m.CreatedAt,
@@ -111,21 +99,19 @@ func (s *SaleContract) List(f model.SaleListFilter) (*model.ListData, error) {
 	p := []any{f.Per(), f.Offset()}
 	query := `SELECT
     	s.id,
-    	s.status,
     	s.description,
     	s.archive,
-    	p.id,
-    	p.name,
     	u.id,
     	u.full_name,
     	u.phone,
     	u.status,
     	s.created_at,
     	s.updated_at,
-       	count(p.*) over()
+    	sum(sp.price),
+       	count(s.*) over()
 	FROM sales s
-		JOIN products p on p.id = s.product_id
-		JOIN users u on u.id = s.user_id`
+		JOIN users u on u.id = s.user_id
+		JOIN sale_products sp on s.id = sp.sale_id`
 
 	if f.CheckSearchData() {
 		w = fmt.Sprintf("%s AND %s", w, f.SearchLikes([]string{"c.id", "c.full_name", "c.birth", "c.phone"}))
@@ -134,8 +120,9 @@ func (s *SaleContract) List(f model.SaleListFilter) (*model.ListData, error) {
 	if len(w) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.TrimPrefix(w, " AND "))
 	}
-	query = fmt.Sprintf("%s LIMIT $1 OFFSET $2", query)
+	query = fmt.Sprintf("%s GROUP BY s.id, u.id LIMIT $1 OFFSET $2", query)
 	rows, err := s.database.db.Query(query, p...)
+	//fmt.Println("list", query)
 	if err != nil {
 		return nil, err
 	}
@@ -145,17 +132,15 @@ func (s *SaleContract) List(f model.SaleListFilter) (*model.ListData, error) {
 		var description sql.NullString
 		rows.Scan(
 			&m.ID,
-			&m.Status,
 			&description,
 			&m.Archive,
-			&m.Product.ID,
-			&m.Product.Name,
 			&m.User.ID,
 			&m.User.FullName,
 			&m.User.Phone,
 			&m.User.Status,
 			&m.CreatedAt,
 			&m.UpdatedAt,
+			&m.Price,
 			&count,
 		)
 		m.Description = description.String
@@ -171,7 +156,8 @@ func (s *SaleContract) Save(m *model.SaleData) error {
 	if !m.CheckInsertData() && !m.CheckUpdateData() {
 		return store.ErrRequiredDataNotFount
 	}
-	if !m.CheckIDData() {
+	isNew := !m.CheckIDData()
+	if isNew {
 		m.ID = misc.NewUUID()
 	}
 	p := []any{m.ID}
@@ -182,30 +168,6 @@ func (s *SaleContract) Save(m *model.SaleData) error {
 		p = append(p, m.UserID)
 		fields = fmt.Sprintf("%s user_id,", fields)
 		set = fmt.Sprintf("%s user_id=$%d,", set, len(p))
-	}
-	// product
-	if m.CheckProductIDData() {
-		p = append(p, m.ProductID)
-		fields = fmt.Sprintf("%s product_id,", fields)
-		set = fmt.Sprintf("%s product_id=$%d,", set, len(p))
-	}
-	// status
-	if m.CheckStatusData() {
-		p = append(p, m.Status)
-		fields = fmt.Sprintf("%s status,", fields)
-		set = fmt.Sprintf("%s status=$%d,", set, len(p))
-	}
-	// price
-	if m.CheckPriceData() {
-		p = append(p, m.PriceInt())
-		fields = fmt.Sprintf("%s price,", fields)
-		set = fmt.Sprintf("%s price=$%d,", set, len(p))
-	}
-	// quantity
-	if m.CheckQuantityData() {
-		p = append(p, m.QuantityInt())
-		fields = fmt.Sprintf("%s quantity,", fields)
-		set = fmt.Sprintf("%s quantity=$%d,", set, len(p))
 	}
 	// description
 	if m.CheckDescriptionData() {
@@ -227,21 +189,39 @@ func (s *SaleContract) Save(m *model.SaleData) error {
 		strings.TrimSuffix(set, ","))
 	_, err := s.database.db.Exec(query, p...)
 	if err != nil {
-		if err.Error() == misc.SqlConstraintErrorStr("products_unique") {
-			return store.ErrRecordDuplicate
-		}
 		return err
 	}
 	one, err := s.One(model.SaleOneFilter{IDData: m.IDData})
 	m.UserID = one.UserID
-	m.ProductID = one.ProductID
-	m.Status = one.Status
-	m.Price = one.Price
-	m.Quantity = one.Quantity
 	m.Description = one.Description
 	m.Archive = one.Archive
 	m.TimestampData = one.TimestampData
-	fmt.Println("save", one.Archive)
+
+	if m.CheckSaleOrdersData() {
+		if !isNew {
+			query = "DELETE FROM sale_products WHERE sale_id=$1"
+			_, err = s.database.db.Exec(query, m.ID)
+			if err != nil {
+				return err
+			}
+		}
+
+		p = []any{}
+		values := ""
+		for _, o := range m.SaleOrders {
+			l := len(p)
+			p = append(p, m.ID, o.ProductID, o.PriceInt(), o.QuantityInt())
+			values = fmt.Sprintf("%s(%s),", values, misc.SQLPlaceHolder(4, 1+l))
+		}
+
+		query = fmt.Sprintf(`INSERT INTO sale_products
+    		(sale_id, product_id, price, quantity) VALUES %s`,
+			strings.TrimSuffix(values, ","))
+		_, err = s.database.db.Exec(query, p...)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

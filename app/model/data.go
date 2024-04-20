@@ -56,44 +56,82 @@ func (d *FullNameData) CheckFullNameData() bool {
 }
 
 type StatusData struct {
-	Status string `json:"status"`
+	Status string `json:"status,omitempty"`
 }
 
 type TimestampData struct {
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	CreatedAt string `json:"created_at,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
 type OrdersData struct {
-	JsonOrder string `schema:"orders"`
+	JsonOrder string `schema:"SaleOrders"`
 }
 
-func (d *OrdersData) OrdersWhere(orders map[string]string) string {
+func (d *OrdersData) OrdersWhere(fields []string, def string) string {
 	res := ""
+	var orders []string
 	if d.CheckOrderData() {
-		var data map[string]string
-		err := json.Unmarshal([]byte(d.JsonOrder), &data)
+		err := json.Unmarshal([]byte(d.JsonOrder), &orders)
 		if err != nil {
-			fmt.Println("error parse orders", d.JsonOrder, err)
-		}
-
-		for k, v := range data {
-			orders[k] = v
+			fmt.Println("error parse order json", d.JsonOrder, err)
 		}
 	}
 
-	for f, o := range orders {
-		order := strings.ToUpper(o)
-		if order == "ASC" || order == "DESC" {
-			res = fmt.Sprintf("%s %s %s,", res, f, order)
+	for _, o := range orders {
+		res = fmt.Sprintf("%s%s", res, d.parseOrder(o, fields))
+	}
+	if len(orders) == 0 && len(def) > 4 {
+		for _, o := range strings.Split(def, ",") {
+			res = fmt.Sprintf("%s%s", res, d.parseOrder(o, fields))
 		}
 	}
 
 	return strings.TrimSuffix(res, ",")
 }
 
+func (d *OrdersData) parseOrder(j string, fields []string) string {
+	res := ""
+	s := ""
+	so := strings.Split(strings.TrimSpace(j), ":")
+	if len(so) == 2 {
+		if strings.ToLower(strings.TrimSpace(so[1])) == "desc" {
+			s = "DESC"
+		} else {
+			s = "ASC"
+		}
+
+		i, err := strconv.Atoi(strings.TrimSpace(so[0]))
+		if err == nil {
+			field := fields[i-1]
+			res = fmt.Sprintf("%s %s %s,", res, field, s)
+		}
+	}
+
+	return res
+}
+
 func (d *OrdersData) CheckOrderData() bool {
 	return len(d.JsonOrder) > 3
+}
+
+type SaleOrdersData struct {
+	SaleOrdersJson string `json:"-" schema:"sale_orders"`
+	SaleOrders     []struct {
+		ProductIDData
+		PriceData
+		QuantityData
+	} `json:"-" schema:"-"`
+}
+
+func (d *SaleOrdersData) CheckSaleOrdersData() bool {
+	if len(d.SaleOrders) == 0 && len(d.SaleOrdersJson) > 40 {
+		err := json.Unmarshal([]byte(d.SaleOrdersJson), &d.SaleOrders)
+		if err != nil {
+			fmt.Println("error parse sale SaleOrders", d.SaleOrdersJson, err)
+		}
+	}
+	return len(d.SaleOrders) > 0
 }
 
 type UserIDData struct {

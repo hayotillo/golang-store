@@ -32,7 +32,7 @@ func (r *UserContract) List(f model.UserListFilter) (*model.ListData, error) {
 		w = f.SearchLikes([]string{"u.phone", "u.full_name", "u.status"})
 	}
 
-	orders := f.OrdersWhere(map[string]string{"u.full_name": "ASC"})
+	orders := f.OrdersWhere([]string{"u.full_name"}, "1:asc")
 
 	if len(w) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.TrimPrefix(w, " AND "))

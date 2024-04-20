@@ -10,7 +10,7 @@ type User struct {
 	FullNameData
 	PhoneData
 	StatusData
-	Token           string `json:"token"`
+	Token           string `json:"token,omitempty"`
 	Password        string `json:"-" schema:"password"`
 	EncryptPassword string `json:"-" schema:"-"`
 }

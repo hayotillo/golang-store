@@ -2,49 +2,32 @@ package model
 
 type Sale struct {
 	IDData
-	StatusData
-	PriceData
-	QuantityData
 	DescriptionData
 	ArchiveData
 	TimestampData
-	User    User    `json:"user" schema:"-"`
-	Product Product `json:"product" schema:"-"`
+	PriceData
+	User    User      `json:"user" schema:"-"`
+	Product []Product `json:"products,omitempty" schema:"-"`
 }
 
 type SaleData struct {
 	IDData
 	UserIDData
-	ProductIDData
-	StatusData
-	PriceData
-	QuantityData
+	SaleOrdersData
 	DescriptionData
 	ArchiveData
 	TimestampData
 }
 
 func (d *SaleData) CheckInsertData() bool {
-	return d.CheckUserIDData() && d.CheckProductIDData()
+	return d.CheckUserIDData() && d.CheckSaleOrdersData()
 }
 
 func (d *SaleData) CheckUpdateData() bool {
 	return d.CheckIDData() && (d.CheckUserIDData() &&
-		d.CheckProductIDData() &&
-		d.CheckUserStatusData() &&
+		d.CheckSaleOrdersData() &&
 		d.CheckDescriptionData() &&
 		d.CheckArchiveData())
-}
-
-func (d *StatusData) CheckStatusData() bool {
-	switch d.Status {
-	case "archive", "wait":
-		return true
-		break
-	default:
-		return false
-	}
-	return false
 }
 
 type DescriptionData struct {
