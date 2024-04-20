@@ -92,6 +92,8 @@ func (s *server) handleSaleSave() http.HandlerFunc {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
+		u := r.Context().Value(s.jwtSecretKey).(*model.User)
+		m.UserID = u.ID
 
 		err = s.store.Sale().Save(m)
 		if err != nil {

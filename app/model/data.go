@@ -16,19 +16,11 @@ func (d *IDData) CheckIDData() bool {
 }
 
 type ProductIDData struct {
-	ProductID string `json:"customer_id,omitempty" schema:"customer_id"`
+	ProductID string `json:"product_id,omitempty" schema:"product_id"`
 }
 
 func (d *ProductIDData) CheckProductIDData() bool {
 	return len(d.ProductID) == 36
-}
-
-type DoctorIDData struct {
-	DoctorID string `json:"doctor_id,omitempty" schema:"doctor_id"`
-}
-
-func (d *DoctorIDData) CheckDoctorIDData() bool {
-	return len(d.DoctorID) == 36
 }
 
 type ListData struct {

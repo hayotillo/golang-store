@@ -73,6 +73,8 @@ func (s *SaleContract) One(f model.SaleOneFilter) (*model.SaleData, error) {
     	s.user_id,
     	s.product_id,
     	s.status,
+    	s.price,
+    	s.quantity,
     	s.description,
     	s.archive,
     	s.created_at,
@@ -90,6 +92,8 @@ func (s *SaleContract) One(f model.SaleOneFilter) (*model.SaleData, error) {
 		&m.UserID,
 		&m.ProductID,
 		&m.Status,
+		&m.Price,
+		&m.Quantity,
 		&description,
 		&m.Archive,
 		&m.CreatedAt,
@@ -232,6 +236,8 @@ func (s *SaleContract) Save(m *model.SaleData) error {
 	m.UserID = one.UserID
 	m.ProductID = one.ProductID
 	m.Status = one.Status
+	m.Price = one.Price
+	m.Quantity = one.Quantity
 	m.Description = one.Description
 	m.Archive = one.Archive
 	m.TimestampData = one.TimestampData

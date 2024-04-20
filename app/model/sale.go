@@ -48,7 +48,7 @@ func (d *StatusData) CheckStatusData() bool {
 }
 
 type DescriptionData struct {
-	Description string `json:"diagnosis" schema:"diagnosis"`
+	Description string `json:"description" schema:"description"`
 }
 
 func (d *DescriptionData) CheckDescriptionData() bool {

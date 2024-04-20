@@ -43,8 +43,8 @@ func (s *server) init() {
 	user.HandleFunc("/list", s.handleUserList()).Methods("POST")
 	user.HandleFunc("/save", s.handleUserSave()).Methods("POST")
 	user.HandleFunc("/delete", s.handleUserDelete()).Methods("POST")
-	// visit
-	visit := private.PathPrefix("/visit").Subrouter()
+	// sale
+	visit := private.PathPrefix("/sale").Subrouter()
 	visit.HandleFunc("/one", s.handleSaleOne()).Methods("POST")
 	visit.HandleFunc("/list", s.handleSaleList()).Methods("POST")
 	visit.HandleFunc("/save", s.handleSaleSave()).Methods("POST")
