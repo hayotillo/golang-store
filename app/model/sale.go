@@ -16,6 +16,7 @@ type SaleData struct {
 	SaleOrdersData
 	DescriptionData
 	ArchiveData
+	ClearOrdersData
 	TimestampData
 }
 
@@ -24,10 +25,22 @@ func (d *SaleData) CheckInsertData() bool {
 }
 
 func (d *SaleData) CheckUpdateData() bool {
-	return d.CheckIDData() && (d.CheckUserIDData() &&
-		d.CheckSaleOrdersData() &&
-		d.CheckDescriptionData() &&
+	return d.CheckIDData() && (d.CheckUserIDData() ||
+		d.CheckClearOrdersData() ||
+		d.CheckDescriptionData() ||
 		d.CheckArchiveData())
+}
+
+type ClearOrdersData struct {
+	ClearOrders string `json:"-" schema:"clear_orders"`
+}
+
+func (d *ClearOrdersData) CheckClearOrdersData() bool {
+	return d.ClearOrders == "true" || d.ClearOrders == "false"
+}
+
+func (d *ClearOrdersData) IsClearOrders() bool {
+	return d.ClearOrders == "true"
 }
 
 type DescriptionData struct {
@@ -51,7 +64,7 @@ func (d *ArchiveData) IsArchive() bool {
 }
 
 type SaleProduct struct {
-	ProductIDData
+	IDData
 	NameData
 	PriceData
 	QuantityData

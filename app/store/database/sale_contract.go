@@ -153,23 +153,24 @@ func (s *SaleContract) List(f model.SaleListFilter) (*model.ListData, error) {
 }
 
 func (s *SaleContract) Products(f model.SaleProductListFilter) (*model.ListData, error) {
-	if !f.CheckSaleIDData() {
-		return nil, store.ErrRequiredDataNotFount
-	}
 	res := &model.ListData{}
 
 	w := ""
-	p := []any{f.Per(), f.Offset(), f.SaleID}
-	query := `SELECT id, name, MAX(price), MAX(quantity), count(*) over()
+	p := []any{f.Per(), f.Offset()}
+	query := `SELECT p.id, p.name, 0, 0, count(*) over() FROM products p`
+	if f.CheckSaleIDData() {
+		p = append(p, f.SaleID)
+		query = `SELECT id, name, MAX(price), MAX(quantity), count(*) over()
 		FROM (
-			 SELECT id, name, price, quantity
+			 SELECT p.id, p.name, sp.price, sp.quantity
 			 FROM products p
 				  JOIN sale_products sp ON p.id = sp.product_id
 			 WHERE sp.sale_id = $3
 			 UNION ALL
-			 SELECT id, name, 0, 0
-			 FROM products
+			 SELECT p.id, p.name, 0, 0
+			 FROM products p
 		) AS combined_data`
+	}
 
 	if f.CheckSearchData() {
 		w = fmt.Sprintf("%s AND %s", w, f.SearchLikes([]string{"id", "name"}))
@@ -190,7 +191,7 @@ func (s *SaleContract) Products(f model.SaleProductListFilter) (*model.ListData,
 	for rows.Next() {
 		var m model.SaleProduct
 		rows.Scan(
-			&m.ProductID,
+			&m.ID,
 			&m.Name,
 			&m.Price,
 			&m.Quantity,
@@ -248,29 +249,28 @@ func (s *SaleContract) Save(m *model.SaleData) error {
 	m.Archive = one.Archive
 	m.TimestampData = one.TimestampData
 
-	if m.CheckSaleOrdersData() {
-		if !isNew {
-			query = "DELETE FROM sale_products WHERE sale_id=$1"
-			_, err = s.database.db.Exec(query, m.ID)
+	if m.CheckSaleOrdersData() || m.CheckClearOrdersData() {
+		query = "DELETE FROM sale_products WHERE sale_id=$1"
+		_, err = s.database.db.Exec(query, m.ID)
+		if err != nil {
+			return err
+		}
+		if m.CheckSaleOrdersData() {
+			p = []any{}
+			values := ""
+			for _, o := range m.SaleOrders {
+				l := len(p)
+				p = append(p, m.ID, o.ProductID, o.PriceInt(), o.QuantityInt())
+				values = fmt.Sprintf("%s(%s),", values, misc.SQLPlaceHolder(4, 1+l))
+			}
+
+			query = fmt.Sprintf(`INSERT INTO sale_products
+    		(sale_id, product_id, price, quantity) VALUES %s`,
+				strings.TrimSuffix(values, ","))
+			_, err = s.database.db.Exec(query, p...)
 			if err != nil {
 				return err
 			}
-		}
-
-		p = []any{}
-		values := ""
-		for _, o := range m.SaleOrders {
-			l := len(p)
-			p = append(p, m.ID, o.ProductID, o.PriceInt(), o.QuantityInt())
-			values = fmt.Sprintf("%s(%s),", values, misc.SQLPlaceHolder(4, 1+l))
-		}
-
-		query = fmt.Sprintf(`INSERT INTO sale_products
-    		(sale_id, product_id, price, quantity) VALUES %s`,
-			strings.TrimSuffix(values, ","))
-		_, err = s.database.db.Exec(query, p...)
-		if err != nil {
-			return err
 		}
 	}
 

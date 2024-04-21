@@ -1,6 +1,5 @@
 create table if not exists sale_products
 (
-    id         char(36) primary key,
     sale_id    char(36)    not null,
     product_id char(36)    not null,
     price      numeric(14) not null default 0,
