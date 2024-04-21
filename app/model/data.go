@@ -142,12 +142,12 @@ func (d *UserIDData) CheckUserIDData() bool {
 	return len(d.UserID) == 36
 }
 
-type VisitIDData struct {
-	VisitID string `json:"visit_id" schema:"visit_id"`
+type SaleIDData struct {
+	SaleID string `json:"sale_id" schema:"sale_id"`
 }
 
-func (d *VisitIDData) CheckVisitIDData() bool {
-	return len(d.VisitID) == 36
+func (d *SaleIDData) CheckSaleIDData() bool {
+	return len(d.SaleID) == 36
 }
 
 type PhoneData struct {

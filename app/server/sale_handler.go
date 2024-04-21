@@ -78,6 +78,30 @@ func (s *server) handleSaleList() http.HandlerFunc {
 	}
 }
 
+func (s *server) handleSaleProducts() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+		}
+
+		f := model.SaleProductListFilter{}
+		decoder := schema.NewDecoder()
+		err = decoder.Decode(&f, r.PostForm)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		list, err := s.store.Sale().Products(f)
+		if err != nil {
+			s.error(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+		s.respond(w, r, http.StatusOK, list)
+	}
+}
+
 func (s *server) handleSaleSave() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()

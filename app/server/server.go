@@ -48,6 +48,7 @@ func (s *server) init() {
 	visit.HandleFunc("/get", s.handleSaleGet()).Methods("POST")
 	visit.HandleFunc("/one", s.handleSaleOne()).Methods("POST")
 	visit.HandleFunc("/list", s.handleSaleList()).Methods("POST")
+	visit.HandleFunc("/products", s.handleSaleProducts()).Methods("POST")
 	visit.HandleFunc("/save", s.handleSaleSave()).Methods("POST")
 	visit.HandleFunc("/delete", s.handleSaleDelete()).Methods("POST")
 	// product

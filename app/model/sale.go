@@ -50,12 +50,26 @@ func (d *ArchiveData) IsArchive() bool {
 	return d.Archive == "true"
 }
 
+type SaleProduct struct {
+	ProductIDData
+	NameData
+	PriceData
+	QuantityData
+}
+
 type SaleOneFilter struct {
 	IDData
 }
 
 type SaleListFilter struct {
 	SearchData
+	PaginateData
+}
+
+type SaleProductListFilter struct {
+	SearchData
+	SaleIDData
+	OrdersData
 	PaginateData
 }
 

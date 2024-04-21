@@ -152,6 +152,57 @@ func (s *SaleContract) List(f model.SaleListFilter) (*model.ListData, error) {
 	return res, nil
 }
 
+func (s *SaleContract) Products(f model.SaleProductListFilter) (*model.ListData, error) {
+	if !f.CheckSaleIDData() {
+		return nil, store.ErrRequiredDataNotFount
+	}
+	res := &model.ListData{}
+
+	w := ""
+	p := []any{f.Per(), f.Offset(), f.SaleID}
+	query := `SELECT id, name, MAX(price), MAX(quantity), count(*) over()
+		FROM (
+			 SELECT id, name, price, quantity
+			 FROM products p
+				  JOIN sale_products sp ON p.id = sp.product_id
+			 WHERE sp.sale_id = $3
+			 UNION ALL
+			 SELECT id, name, 0, 0
+			 FROM products
+		) AS combined_data`
+
+	if f.CheckSearchData() {
+		w = fmt.Sprintf("%s AND %s", w, f.SearchLikes([]string{"id", "name"}))
+	}
+
+	o := f.OrdersWhere([]string{"length(name)", "name"}, "1:asc,2:asc")
+
+	if len(w) > 0 {
+		query = fmt.Sprintf("%s WHERE %s", query, strings.TrimPrefix(w, " AND "))
+	}
+	query = fmt.Sprintf("%s GROUP BY id, name ORDER BY%s LIMIT $1 OFFSET $2", query, o)
+	rows, err := s.database.db.Query(query, p...)
+	//fmt.Println("list", query)
+	if err != nil {
+		return nil, err
+	}
+	count := 0
+	for rows.Next() {
+		var m model.SaleProduct
+		rows.Scan(
+			&m.ProductID,
+			&m.Name,
+			&m.Price,
+			&m.Quantity,
+			&count,
+		)
+		res.Items = append(res.Items, m)
+	}
+	res.Paginate = f.Paginate(count)
+
+	return res, nil
+}
+
 func (s *SaleContract) Save(m *model.SaleData) error {
 	if !m.CheckInsertData() && !m.CheckUpdateData() {
 		return store.ErrRequiredDataNotFount
