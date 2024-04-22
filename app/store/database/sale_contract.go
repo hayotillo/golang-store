@@ -157,19 +157,31 @@ func (s *SaleContract) Products(f model.SaleProductListFilter) (*model.ListData,
 
 	w := ""
 	p := []any{f.Per(), f.Offset()}
+	groupBy := []string{
+		"id",
+		"name",
+	}
 	query := `SELECT p.id, p.name, 0, 0, count(*) over() FROM products p`
 	if f.CheckSaleIDData() {
 		p = append(p, f.SaleID)
-		query = `SELECT id, name, MAX(price), MAX(quantity), count(*) over()
-		FROM (
-			 SELECT p.id, p.name, sp.price, sp.quantity
-			 FROM products p
-				  JOIN sale_products sp ON p.id = sp.product_id
-			 WHERE sp.sale_id = $3
-			 UNION ALL
-			 SELECT p.id, p.name, 0, 0
-			 FROM products p
-		) AS combined_data`
+		if f.IsSelfOnly() {
+			groupBy = append(groupBy, "sp.price", "sp.quantity")
+			query = `SELECT p.id, p.name, sp.price, sp.quantity, count(*) over()
+			FROM products p
+				JOIN sale_products sp ON p.id = sp.product_id
+				WHERE sp.sale_id=$3`
+		} else {
+			query = `SELECT id, name, MAX(price), MAX(quantity), count(*) over()
+			FROM (
+				 SELECT p.id, p.name, sp.price, sp.quantity
+				 FROM products p
+					  JOIN sale_products sp ON p.id = sp.product_id
+				 WHERE sp.sale_id = $3
+				 UNION ALL
+				 SELECT p.id, p.name, 0, 0
+				 FROM products p
+			) AS combined_data`
+		}
 	}
 
 	if f.CheckSearchData() {
@@ -181,9 +193,10 @@ func (s *SaleContract) Products(f model.SaleProductListFilter) (*model.ListData,
 	if len(w) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.TrimPrefix(w, " AND "))
 	}
-	query = fmt.Sprintf("%s GROUP BY id, name ORDER BY%s LIMIT $1 OFFSET $2", query, o)
+	query = fmt.Sprintf("%s GROUP BY %s ORDER BY%s LIMIT $1 OFFSET $2",
+		query, strings.TrimSuffix(strings.Join(groupBy, ", "), ", "), o)
 	rows, err := s.database.db.Query(query, p...)
-	//fmt.Println("list", query)
+	fmt.Println("list", query)
 	if err != nil {
 		return nil, err
 	}

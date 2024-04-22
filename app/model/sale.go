@@ -43,6 +43,18 @@ func (d *ClearOrdersData) IsClearOrders() bool {
 	return d.ClearOrders == "true"
 }
 
+type SelfOnlyData struct {
+	SelfOnly string `json:"-" schema:"self_only"`
+}
+
+func (d *SelfOnlyData) CheckSelfOnlyData() bool {
+	return d.SelfOnly == "true" || d.SelfOnly == "false"
+}
+
+func (d *SelfOnlyData) IsSelfOnly() bool {
+	return d.SelfOnly == "true"
+}
+
 type DescriptionData struct {
 	Description string `json:"description" schema:"description"`
 }
@@ -83,6 +95,7 @@ type SaleProductListFilter struct {
 	SearchData
 	SaleIDData
 	OrdersData
+	SelfOnlyData
 	PaginateData
 }
 
