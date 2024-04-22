@@ -88,6 +88,7 @@ type SaleOneFilter struct {
 
 type SaleListFilter struct {
 	SearchData
+	PeriodData
 	PaginateData
 }
 

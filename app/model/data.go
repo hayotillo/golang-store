@@ -3,8 +3,10 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"store-api/app/misc"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type IDData struct {
@@ -219,4 +221,145 @@ func (d *QuantityData) QuantityInt() int {
 
 func (d *QuantityData) CheckQuantityData() bool {
 	return len(d.Quantity) > 0
+}
+
+type PeriodData struct {
+	PeriodBetweenData
+	PeriodNameDate
+	loaded bool
+}
+
+func (d *PeriodData) CheckPeriodData() bool {
+	if d.CheckPeriodNameData() || d.CheckPeriodBetweenData() {
+		if !d.loaded {
+			d.LoadPeriod()
+		}
+		return true
+	}
+	return false
+}
+
+func (d *PeriodData) PeriodWhere(table string) string {
+	if len(d.PeriodStart) < 20 {
+		d.PeriodStart = misc.DateParseToFull(d.PeriodStart)
+	}
+	if len(d.PeriodEnd) != 23 {
+		c := misc.CurrentTimeFull()
+		d.PeriodEnd = fmt.Sprintf("%s %s", d.PeriodEnd[:10], c[11:])
+	}
+	if len(d.PeriodStart) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("%[1]s.updated_at::timestamp >= '%[2]s' AND %[1]s.updated_at::timestamp <= '%[3]s'",
+		table, d.PeriodStart, d.PeriodEnd)
+}
+
+func (d *PeriodData) LoadPeriod() {
+	if d.CheckPeriodBetweenData() {
+		d.loaded = d.CheckPeriodStartData() && d.CheckPeriodEndData()
+		return
+	}
+	if d.Period == "day" {
+		d.PeriodEnd = misc.CurrentTime()
+		d.PeriodStart = d.PeriodEnd
+		return
+	}
+	format := "2006-01-02 15:04:05"
+	start := ""
+	startAt := time.Now()
+	d.PeriodEnd = misc.CurrentTimeFull()
+	if d.CheckPeriodStartData() {
+		if len(d.PeriodStart) == 10 {
+			d.PeriodStart = fmt.Sprintf("%s 00:00:00", d.PeriodStart)
+		}
+		s, err := time.Parse(format, d.PeriodStart)
+		if err == nil {
+			startAt = s
+			d.PeriodEnd = s.Format(format)
+		}
+	}
+	switch d.Period {
+	case "day":
+		start = startAt.AddDate(0, 0, -1).Format(format)
+		break
+	case "week":
+		start = startAt.AddDate(0, 0, -7).Format(format)
+		break
+	case "month":
+		start = startAt.AddDate(0, -1, 0).Format(format)
+		break
+	case "quarterly":
+		start = startAt.AddDate(0, -3, 0).Format(format)
+		break
+	case "year":
+		start = startAt.AddDate(-1, 0, 0).Format(format)
+		break
+	}
+
+	d.PeriodStart = start
+	d.loaded = true
+}
+
+type PeriodEndData struct {
+	PeriodEnd string `json:"period_end,omitempty" schema:"period_end"`
+}
+
+func (d *PeriodEndData) CheckPeriodEndData() bool {
+	if len(d.PeriodEnd) == 10 {
+		date, err := time.Parse("2006-01-02", d.PeriodEnd)
+		if err != nil {
+			fmt.Println("period end date error", err)
+			return false
+		}
+		d.PeriodEnd = date.Format("2006-01-02")
+		return true
+	}
+	return false
+}
+
+type PeriodBetweenData struct {
+	PeriodStartData
+	PeriodEndData
+}
+
+func (d *PeriodBetweenData) BetweenTimes() (string, string) {
+	bStart := ""
+	bEnd := ""
+	format := "2006-01-02"
+	start, err := time.Parse(format, d.PeriodStart)
+	if err == nil {
+		bStart = start.Format(format)
+	}
+	end, err := time.Parse(format, d.PeriodEnd)
+	if err == nil {
+		bEnd = end.Format(format)
+	}
+
+	return bStart, bEnd
+}
+
+func (d *PeriodBetweenData) CheckPeriodBetweenData() bool {
+	return len(d.PeriodStart) > 9 && len(d.PeriodEnd) > 9
+}
+
+type PeriodStartData struct {
+	PeriodStart string `json:"period_start,omitempty" schema:"period_start"`
+}
+
+func (d *PeriodStartData) CheckPeriodStartData() bool {
+	return len(d.PeriodStart) > 9
+}
+
+type PeriodNameDate struct {
+	Period string `json:"period,omitempty" schema:"period"`
+}
+
+func (d *PeriodNameDate) CheckPeriodNameData() bool {
+	switch d.Period {
+	case "all", "year", "quarterly", "month", "week", "day":
+		return true
+	default:
+		return false
+	}
 }

@@ -117,6 +117,10 @@ func (s *SaleContract) List(f model.SaleListFilter) (*model.ListData, error) {
 		w = fmt.Sprintf("%s AND %s", w, f.SearchLikes([]string{"c.id", "c.full_name", "c.birth", "c.phone"}))
 	}
 
+	if f.CheckPeriodData() {
+		w = fmt.Sprintf("%s AND %s", w, f.PeriodWhere("s"))
+	}
+
 	if len(w) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.TrimPrefix(w, " AND "))
 	}
