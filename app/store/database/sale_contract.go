@@ -196,7 +196,7 @@ func (s *SaleContract) Products(f model.SaleProductListFilter) (*model.ListData,
 	query = fmt.Sprintf("%s GROUP BY %s ORDER BY%s LIMIT $1 OFFSET $2",
 		query, strings.TrimSuffix(strings.Join(groupBy, ", "), ", "), o)
 	rows, err := s.database.db.Query(query, p...)
-	fmt.Println("list", query)
+	//fmt.Println("list", query)
 	if err != nil {
 		return nil, err
 	}
