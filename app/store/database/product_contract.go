@@ -22,7 +22,7 @@ func (s *ProductContract) One(f model.ProductOneFilter) (*model.Product, error) 
 	query := `SELECT
     	p.id,
     	p.name,
-		sum(pi.price),
+		sum(pi.quantity),
 		sum(sp.price)
 	FROM products p
 	    LEFT JOIN product_incoming pi on p.id = pi.product_id
@@ -36,10 +36,10 @@ func (s *ProductContract) One(f model.ProductOneFilter) (*model.Product, error) 
 		return nil, err
 	}
 
-	var inCount, slCount sql.NullString
-	row.Scan(&m.ID, &m.Name, &inCount, &slCount)
-	m.IncomingCount = inCount.String
-	m.SaleCount = slCount.String
+	var inSum, slSum sql.NullString
+	row.Scan(&m.ID, &m.Name, &inSum, &slSum)
+	m.IncomingSum = inSum.String
+	m.SaleSum = slSum.String
 
 	return m, nil
 }
@@ -52,11 +52,11 @@ func (s *ProductContract) List(f model.ProductListFilter) (*model.ListData, erro
 	query := `SELECT
 		p.id,
 		p.name,
-		sum(pi.price),
+		sum(pi.quantity),
 		sum(sp.price),
 		count(p.*) over()
 	FROM products p
-		LEFT JOIN product_incoming pi on p.id = pi.product_id
+		LEFT JOIN product_incoming pi on p.id = pi.product_id AND pi.archive = false
 		LEFT JOIN sale_products sp on p.id = sp.product_id
 	GROUP BY p.id`
 
@@ -76,16 +76,16 @@ func (s *ProductContract) List(f model.ProductListFilter) (*model.ListData, erro
 	count := 0
 	for rows.Next() {
 		var m model.Product
-		var inCount, slCount sql.NullString
+		var inSum, slSum sql.NullString
 		rows.Scan(
 			&m.ID,
 			&m.Name,
-			&inCount,
-			&slCount,
+			&inSum,
+			&slSum,
 			&count,
 		)
-		m.IncomingCount = inCount.String
-		m.SaleCount = slCount.String
+		m.IncomingSum = inSum.String
+		m.SaleSum = slSum.String
 		res.Items = append(res.Items, m)
 	}
 	res.Paginate = f.Paginate(count)

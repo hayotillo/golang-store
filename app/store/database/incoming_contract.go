@@ -25,6 +25,7 @@ func (s *IncomingContract) Get(f model.IncomingOneFilter) (*model.Incoming, erro
     	pi.product_id,
     	pi.price,
     	pi.quantity,
+    	pi.archive,
     	pi.description,
     	pi.created_at,
     	pi.updated_at,
@@ -49,6 +50,7 @@ func (s *IncomingContract) Get(f model.IncomingOneFilter) (*model.Incoming, erro
 		&m.ID,
 		&m.Price,
 		&m.Quantity,
+		&m.Archive,
 		&description,
 		&m.CreatedAt,
 		&m.UpdatedAt,
@@ -75,6 +77,7 @@ func (s *IncomingContract) One(f model.IncomingOneFilter) (*model.IncomingData, 
     	pi.product_id,
     	pi.price,
     	pi.quantity,
+    	pi.archive,
     	pi.description,
     	pi.created_at,
     	pi.updated_at
@@ -94,6 +97,7 @@ func (s *IncomingContract) One(f model.IncomingOneFilter) (*model.IncomingData, 
 		&m.ProductID,
 		&m.Price,
 		&m.Quantity,
+		&m.Archive,
 		&description,
 		&m.CreatedAt,
 		&m.UpdatedAt,
@@ -110,10 +114,9 @@ func (s *IncomingContract) List(f model.IncomingListFilter) (*model.ListData, er
 	p := []any{f.Per(), f.Offset()}
 	query := `SELECT
 		pi.id,
-    	pi.user_id,
-    	pi.product_id,
     	pi.price,
     	pi.quantity,
+    	pi.archive,
     	pi.description,
     	pi.created_at,
     	pi.updated_at,
@@ -136,6 +139,11 @@ func (s *IncomingContract) List(f model.IncomingListFilter) (*model.ListData, er
 		w = fmt.Sprintf("%s AND p.id=$%d", w, len(p))
 	}
 
+	if f.CheckArchiveData() {
+		p = append(p, f.IsArchive())
+		w = fmt.Sprintf("%s AND pi.archive=$%d", w, len(p))
+	}
+
 	if len(w) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.TrimPrefix(w, " AND "))
 	}
@@ -153,6 +161,7 @@ func (s *IncomingContract) List(f model.IncomingListFilter) (*model.ListData, er
 			&m.ID,
 			&m.Price,
 			&m.Quantity,
+			&m.Archive,
 			&description,
 			&m.CreatedAt,
 			&m.UpdatedAt,
@@ -183,6 +192,18 @@ func (s *IncomingContract) Save(m *model.IncomingData) error {
 	p := []any{m.ID}
 	fields := "id,"
 	set := ""
+	// user
+	if m.CheckUserIDData() {
+		p = append(p, m.UserID)
+		fields = fmt.Sprintf("%s user_id,", fields)
+		set = fmt.Sprintf("%s user_id=$%d,", set, len(p))
+	}
+	// product
+	if m.CheckProductIDData() {
+		p = append(p, m.ProductID)
+		fields = fmt.Sprintf("%s product_id,", fields)
+		set = fmt.Sprintf("%s product_id=$%d,", set, len(p))
+	}
 	// price
 	if m.CheckPriceData() {
 		p = append(p, m.PriceInt())
@@ -194,6 +215,12 @@ func (s *IncomingContract) Save(m *model.IncomingData) error {
 		p = append(p, m.QuantityInt())
 		fields = fmt.Sprintf("%s quantity,", fields)
 		set = fmt.Sprintf("%s quantity=$%d,", set, len(p))
+	}
+	// archive
+	if m.CheckArchiveData() {
+		p = append(p, m.IsArchive())
+		fields = fmt.Sprintf("%s archive,", fields)
+		set = fmt.Sprintf("%s archive=$%d,", set, len(p))
 	}
 	// description
 	if m.CheckDescriptionData() {

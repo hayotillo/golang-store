@@ -3,8 +3,8 @@ package model
 type Product struct {
 	IDData
 	NameData
-	IncomingCount string `json:"incoming_count" schema:"incoming_count"`
-	SaleCount     string `json:"sale_count" schema:"sale_count"`
+	IncomingSum string `json:"incoming_sum" schema:"incoming_sum"`
+	SaleSum     string `json:"sale_sum" schema:"sale_sum"`
 }
 
 func (d *Product) CheckInsertData() bool {

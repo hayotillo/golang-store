@@ -5,6 +5,7 @@ create table if not exists product_incoming
     product_id  char(36)    not null,
     price       numeric(14) not null default 0,
     quantity    numeric(14) not null default 0,
+    archive     bool                 default false,
     description text,
     created_at  timestamp            default now(),
     updated_at  timestamp            default now(),

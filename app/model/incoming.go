@@ -4,6 +4,7 @@ type Incoming struct {
 	IDData
 	PriceData
 	QuantityData
+	ArchiveData
 	DescriptionData
 	TimestampData
 	User    User    `json:"user" schema:"-"`
@@ -16,6 +17,7 @@ type IncomingData struct {
 	ProductIDData
 	PriceData
 	QuantityData
+	ArchiveData
 	DescriptionData
 	TimestampData
 }
@@ -28,7 +30,8 @@ func (d *IncomingData) CheckInsertData() bool {
 }
 
 func (d *IncomingData) CheckUpdateData() bool {
-	return d.CheckIDData() && (d.CheckUserIDData() ||
+	return d.CheckIDData() && (d.CheckArchiveData() ||
+		d.CheckUserIDData() ||
 		d.CheckProductIDData() ||
 		d.CheckPriceData() ||
 		d.CheckQuantityData() ||
@@ -43,6 +46,7 @@ type IncomingListFilter struct {
 	SearchData
 	OrdersData
 	ProductIDData
+	ArchiveData
 	PaginateData
 }
 

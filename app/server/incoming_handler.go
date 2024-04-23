@@ -92,6 +92,8 @@ func (s *server) handleIncomingSave() http.HandlerFunc {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
+		u := r.Context().Value(s.jwtSecretKey).(*model.User)
+		m.UserID = u.ID
 
 		err = s.store.Incoming().Save(m)
 		if err != nil {
