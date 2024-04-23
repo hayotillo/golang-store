@@ -3,6 +3,8 @@ package model
 type Product struct {
 	IDData
 	NameData
+	IncomingCount string `json:"incoming_count" schema:"incoming_count"`
+	SaleCount     string `json:"sale_count" schema:"sale_count"`
 }
 
 func (d *Product) CheckInsertData() bool {
@@ -19,6 +21,7 @@ type ProductOneFilter struct {
 
 type ProductListFilter struct {
 	SearchData
+	OrdersData
 	PaginateData
 }
 

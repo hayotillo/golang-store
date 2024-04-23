@@ -14,6 +14,8 @@ type Database struct {
 	saleContract *SaleContract
 	// product
 	productContract *ProductContract
+	// incoming
+	incomingContract *IncomingContract
 }
 
 func New(db *sql.DB, per int) *Database {
@@ -45,4 +47,13 @@ func (d *Database) Product() store.ProductInterface {
 		d.productContract = &ProductContract{database: d}
 	}
 	return d.productContract
+}
+
+// incoming
+
+func (d *Database) Incoming() store.IncomingInterface {
+	if d.incomingContract == nil {
+		d.incomingContract = &IncomingContract{database: d}
+	}
+	return d.incomingContract
 }

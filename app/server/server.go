@@ -57,6 +57,14 @@ func (s *server) init() {
 	product.HandleFunc("/list", s.handleProductList()).Methods("POST")
 	product.HandleFunc("/save", s.handleProductSave()).Methods("POST")
 	product.HandleFunc("/delete", s.handleProductDelete()).Methods("POST")
+	// incoming
+	incoming := private.PathPrefix("/incoming").Subrouter()
+	incoming.HandleFunc("/get", s.handleIncomingGet()).Methods("POST")
+	incoming.HandleFunc("/one", s.handleIncomingOne()).Methods("POST")
+	incoming.HandleFunc("/list", s.handleIncomingList()).Methods("POST")
+	incoming.HandleFunc("/save", s.handleIncomingSave()).Methods("POST")
+	incoming.HandleFunc("/delete", s.handleIncomingDelete()).Methods("POST")
+
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

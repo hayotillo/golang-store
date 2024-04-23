@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"store-api/app/misc"
 	"store-api/app/model"
@@ -18,14 +19,27 @@ func (s *ProductContract) One(f model.ProductOneFilter) (*model.Product, error) 
 	}
 	m := &model.Product{}
 
-	query := `SELECT p.id, p.name FROM products p WHERE p.id=$1`
+	query := `SELECT
+    	p.id,
+    	p.name,
+		sum(pi.price),
+		sum(sp.price)
+	FROM products p
+	    LEFT JOIN product_incoming pi on p.id = pi.product_id
+		LEFT JOIN sale_products sp on p.id = sp.product_id
+	WHERE p.id=$1
+	GROUP BY p.id`
 
 	row := s.database.db.QueryRow(query, f.ID)
 	err := row.Err()
 	if err != nil {
 		return nil, err
 	}
-	row.Scan(&m.ID, &m.Name)
+
+	var inCount, slCount sql.NullString
+	row.Scan(&m.ID, &m.Name, &inCount, &slCount)
+	m.IncomingCount = inCount.String
+	m.SaleCount = slCount.String
 
 	return m, nil
 }
@@ -35,7 +49,16 @@ func (s *ProductContract) List(f model.ProductListFilter) (*model.ListData, erro
 
 	w := ""
 	p := []any{f.Per(), f.Offset()}
-	query := `SELECT c.id, c.name, count(c.*) over() FROM products c`
+	query := `SELECT
+		p.id,
+		p.name,
+		sum(pi.price),
+		sum(sp.price),
+		count(p.*) over()
+	FROM products p
+		LEFT JOIN product_incoming pi on p.id = pi.product_id
+		LEFT JOIN sale_products sp on p.id = sp.product_id
+	GROUP BY p.id`
 
 	if f.CheckSearchData() {
 		w = fmt.Sprintf("%s AND %s", w, f.SearchLikes([]string{"c.id", "c.full_name", "c.birth", "c.phone"}))
@@ -44,7 +67,8 @@ func (s *ProductContract) List(f model.ProductListFilter) (*model.ListData, erro
 	if len(w) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.TrimPrefix(w, " AND "))
 	}
-	query = fmt.Sprintf("%s LIMIT $1 OFFSET $2", query)
+	o := f.OrdersWhere([]string{"length(p.name)", "p.name"}, "1:asc,2:asc")
+	query = fmt.Sprintf("%s ORDER BY%s LIMIT $1 OFFSET $2", query, o)
 	rows, err := s.database.db.Query(query, p...)
 	if err != nil {
 		return nil, err
@@ -52,7 +76,16 @@ func (s *ProductContract) List(f model.ProductListFilter) (*model.ListData, erro
 	count := 0
 	for rows.Next() {
 		var m model.Product
-		rows.Scan(&m.ID, &m.Name, &count)
+		var inCount, slCount sql.NullString
+		rows.Scan(
+			&m.ID,
+			&m.Name,
+			&inCount,
+			&slCount,
+			&count,
+		)
+		m.IncomingCount = inCount.String
+		m.SaleCount = slCount.String
 		res.Items = append(res.Items, m)
 	}
 	res.Paginate = f.Paginate(count)

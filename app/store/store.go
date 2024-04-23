@@ -6,4 +6,6 @@ type Store interface {
 	Sale() SaleInterface
 
 	Product() ProductInterface
+
+	Incoming() IncomingInterface
 }
