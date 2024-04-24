@@ -363,3 +363,8 @@ func (d *PeriodNameDate) CheckPeriodNameData() bool {
 		return false
 	}
 }
+
+type ReportFileData struct {
+	File []byte
+	Name string
+}

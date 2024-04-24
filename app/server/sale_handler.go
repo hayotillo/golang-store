@@ -1,10 +1,41 @@
 package server
 
 import (
+	"fmt"
 	"github.com/gorilla/schema"
 	"net/http"
 	"store-api/app/model"
 )
+
+func (s *server) handleSaleCheckFile() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+		}
+
+		f := model.SaleOneFilter{}
+		decoder := schema.NewDecoder()
+		err = decoder.Decode(&f, r.PostForm)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		checkFile, err := s.store.Sale().CheckFile(f)
+
+		w.Header().Set("Content-Type", "application/pdf")
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s1.pdf", checkFile.Name))
+		fmt.Println("check file", err, checkFile.Name)
+		if checkFile == nil {
+			s.error(w, r, http.StatusUnprocessableEntity, nil)
+			return
+		}
+
+		w.Write(checkFile.File)
+		return
+	}
+}
 
 func (s *server) handleSaleGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

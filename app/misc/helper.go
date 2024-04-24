@@ -3,6 +3,8 @@ package misc
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
+	"os"
 	"strings"
 	"time"
 )
@@ -36,4 +38,13 @@ func DateParseToFull(s string) string {
 		return ""
 	}
 	return t.Format("2006-01-02 15:04:05.000")
+}
+
+func GetConfig(keys []string) map[string]string {
+	res := make(map[string]string, len(keys))
+	godotenv.Load(".env")
+	for _, key := range keys {
+		res[key] = os.Getenv(strings.Replace(strings.ToUpper(key), " ", "_", -1))
+	}
+	return res
 }

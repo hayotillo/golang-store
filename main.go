@@ -8,7 +8,7 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
-	"os"
+	"store-api/app/misc"
 	"store-api/app/model"
 	"store-api/app/server"
 	"store-api/app/service"
@@ -49,18 +49,31 @@ func main() {
 
 func loadConfig() model.AppConfig {
 	config := model.AppConfig{}
-	config.Debug = os.Getenv("DEBUG") == "true"
+	keys := []string{
+		"DEBUG",
+		"DB_NAME",
+		"DB_USER",
+		"DB_HOST",
+		"DB_PORT",
+		"DB_PASSWORD",
+		"BIND_HOST",
+		"BIND_PORT",
+		"JWT_SECRET_KEY",
+		"PER",
+	}
+	cnf := misc.GetConfig(keys)
+	config.Debug = cnf["DEBUG"] == "true"
 	// db config
-	config.DbName = os.Getenv("DB_NAME")
-	config.DbUser = os.Getenv("DB_USER")
-	config.DbHost = os.Getenv("DB_HOST")
-	config.DbPort = os.Getenv("DB_PORT")
-	config.DbPassword = os.Getenv("DB_PASSWORD")
+	config.DbName = cnf["DB_NAME"]
+	config.DbUser = cnf["DB_USER"]
+	config.DbHost = cnf["DB_HOST"]
+	config.DbPort = cnf["DB_PORT"]
+	config.DbPassword = cnf["DB_PASSWORD"]
 	// server config
-	config.BindHost = os.Getenv("BIND_HOST")
-	config.BindPort = os.Getenv("BIND_PORT")
-	config.JwtSecretKey = os.Getenv("JWT_SECRET_KEY")
-	per, err := strconv.Atoi(os.Getenv("PER"))
+	config.BindHost = cnf["BIND_HOST"]
+	config.BindPort = cnf["BIND_PORT"]
+	config.JwtSecretKey = cnf["JWT_SECRET_KEY"]
+	per, err := strconv.Atoi(cnf["PER"])
 	if err != nil {
 		config.Per = 10
 	} else {

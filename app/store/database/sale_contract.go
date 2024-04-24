@@ -1,16 +1,93 @@
 package database
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
+	"github.com/go-pdf/fpdf"
+	"os"
 	"store-api/app/misc"
 	"store-api/app/model"
 	"store-api/app/store"
+	"strconv"
 	"strings"
 )
 
 type SaleContract struct {
 	database *Database
+}
+
+func (s *SaleContract) CheckFile(f model.SaleOneFilter) (*model.ReportFileData, error) {
+	if !f.CheckIDData() {
+		return nil, store.ErrRequiredDataNotFount
+	}
+	file := &model.ReportFileData{}
+	cnf := misc.GetConfig([]string{"company name"})
+
+	// Create a new PDF document
+	pdf := fpdf.New(fpdf.OrientationPortrait, fpdf.UnitPoint, fpdf.PageSizeA4, ".")
+	w, _ := pdf.GetPageSize()
+
+	// Add a page to the PDF
+	pdf.AddPage()
+	// set list title
+	pdf.SetFont("Arial", "B", 20)
+	pdf.SetDrawColor(219, 219, 219)
+	pdf.SetTextColor(57, 49, 47)
+	// company name
+	pdf.CellFormat(w-50, 50, cnf["company name"], "", 0, "C", false, 0, "")
+	pdf.Ln(80)
+
+	// Add rows to the table
+	pf := model.SaleProductListFilter{}
+	pf.PaginatePer = 1000000
+	pf.SelfOnly = "true"
+	pf.SaleID = f.ID
+	products, err := s.Products(pf)
+	if err != nil {
+		return nil, err
+	}
+
+	pdf.SetFont("Arial", "B", 17)
+	pdf.CellFormat(380, 30, "Maxsulot", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(80, 30, "Narx", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(80, 30, "Summa", "1", 0, "C", false, 0, "")
+
+	// row title style
+	pdf.SetFont("Arial", "B", 15)
+	priceSum := 0
+	quantitySum := 0
+	for _, item := range products.Items {
+		saleProduct := item.(model.SaleProduct)
+		pdf.Ln(-1)
+		price := saleProduct.PriceInt()
+		quantity := saleProduct.QuantityInt()
+		pdf.CellFormat(380, 30, saleProduct.Name, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(80, 30, fmt.Sprintf("%vx%v", price, quantity), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(80, 30, strconv.Itoa(price*quantity), "1", 0, "R", false, 0, "")
+		priceSum += price
+		quantitySum += quantity
+	}
+	pdf.Ln(50)
+	pdf.CellFormat(380, 30, "Jami:", "1", 0, "L", false, 0, "")
+	pdf.CellFormat(80, 30, strconv.Itoa(priceSum*quantitySum), "1", 0, "R", false, 0, "")
+	pdf.CellFormat(80, 30, strconv.Itoa(quantitySum), "1", 0, "R", false, 0, "")
+	// add time
+	pdf.Ln(50)
+	pdf.CellFormat(540, 30, fmt.Sprintf("Sana: %s", misc.CurrentTimeFull()[:19]), "", 0, "C", false, 0, "")
+
+	// Output the PDF to a file
+	var buf bytes.Buffer
+	err = pdf.Output(&buf)
+	if err != nil {
+		fmt.Println("pdf out error:", err)
+		os.Exit(1)
+	}
+	file.Name = strings.Replace(misc.CurrentTimeFull()[:19], " ", "-", -1)
+	file.File = buf.Bytes()
+	defer pdf.Close()
+
+	return file, nil
 }
 
 func (s *SaleContract) Get(f model.SaleOneFilter) (*model.Sale, error) {
