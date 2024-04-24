@@ -23,10 +23,14 @@ func (s *server) handleSaleCheckFile() http.HandlerFunc {
 		}
 
 		checkFile, err := s.store.Sale().CheckFile(f)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
 
 		w.Header().Set("Content-Type", "application/pdf")
 		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s1.pdf", checkFile.Name))
-		fmt.Println("check file", err, checkFile.Name)
+		//fmt.Println("check file", err, checkFile.Name)
 		if checkFile == nil {
 			s.error(w, r, http.StatusUnprocessableEntity, nil)
 			return

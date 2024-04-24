@@ -32,6 +32,7 @@ func (s *server) init() {
 	router.Use(s.JsonMiddleware)
 	// public
 	router.HandleFunc("/user/login", s.handleUserLogin()).Methods("POST")
+	//router.HandleFunc("/check-file", s.handleSaleCheckFile()).Methods("GET")
 	// private
 	private := router.PathPrefix("/private").Subrouter()
 	private.Use(s.UserAuthenticatedMiddleware)
