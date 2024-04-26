@@ -3,9 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/gorilla/handlers"
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"store-api/app/misc"
@@ -14,11 +11,11 @@ import (
 	"store-api/app/service"
 	"store-api/app/store/database"
 	"strconv"
+
+	"github.com/gorilla/handlers"
+	_ "github.com/lib/pq"
 )
 
-func init() {
-	godotenv.Load(".env")
-}
 func main() {
 	config := loadConfig()
 	if config.Debug {

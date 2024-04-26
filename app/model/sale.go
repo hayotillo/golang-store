@@ -82,6 +82,18 @@ type SaleProduct struct {
 	QuantityData
 }
 
+type SaleHistories struct {
+	Items []SaleHistoryItem `json:"items" schema:"items"`
+}
+
+type SaleHistoryItem struct {
+	IDData
+	PriceData
+	QuantityData
+	TimestampData
+	User User `json:"user" schema:"user"`
+}
+
 type SaleOneFilter struct {
 	IDData
 }
@@ -98,6 +110,13 @@ type SaleProductListFilter struct {
 	OrdersData
 	SelfOnlyData
 	PaginateData
+}
+
+type SaleHistoryFilter struct {
+	SaleIDData
+	OrdersData
+	SelfOnlyData
+	PeriodData
 }
 
 type SaleDeleteFilter struct {

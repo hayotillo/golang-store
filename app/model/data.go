@@ -240,6 +240,7 @@ func (d *PeriodData) CheckPeriodData() bool {
 }
 
 func (d *PeriodData) PeriodWhere(table string) string {
+	fmt.Println("period", d.PeriodStart, d.PeriodEnd)
 	if len(d.PeriodStart) < 20 {
 		d.PeriodStart = misc.DateParseToFull(d.PeriodStart)
 	}
@@ -250,7 +251,7 @@ func (d *PeriodData) PeriodWhere(table string) string {
 	if len(d.PeriodStart) == 0 {
 		return ""
 	}
-
+	fmt.Println("period", d.PeriodStart, d.PeriodEnd)
 	return fmt.Sprintf("%[1]s.updated_at::timestamp >= '%[2]s' AND %[1]s.updated_at::timestamp <= '%[3]s'",
 		table, d.PeriodStart, d.PeriodEnd)
 }
@@ -280,9 +281,6 @@ func (d *PeriodData) LoadPeriod() {
 		}
 	}
 	switch d.Period {
-	case "day":
-		start = startAt.AddDate(0, 0, -1).Format(format)
-		break
 	case "week":
 		start = startAt.AddDate(0, 0, -7).Format(format)
 		break

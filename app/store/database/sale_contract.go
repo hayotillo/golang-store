@@ -17,6 +17,58 @@ type SaleContract struct {
 	database *Database
 }
 
+func (s *SaleContract) History(f model.SaleHistoryFilter) (*model.SaleHistories, error) {
+	if !f.CheckPeriodData() {
+		return nil, store.ErrRequiredDataNotFount
+	}
+	res := &model.SaleHistories{}
+
+	w := ""
+	query := fmt.Sprintf(`SELECT
+    	s.id,
+    	u.id,
+    	u.full_name,
+    	u.phone,
+    	u.status,
+    	s.created_at,
+    	s.updated_at,
+    	sum(sp.price),
+    	sum(sp.quantity)
+	FROM sales s
+		JOIN users u on u.id = s.user_id
+		JOIN sale_products sp on s.id = sp.sale_id
+		WHERE %s
+		GROUP BY s.id, u.id`, f.PeriodWhere("s"))
+
+	if f.CheckPeriodData() {
+		w = fmt.Sprintf("%s AND %s", w, f.PeriodWhere("s"))
+	}
+
+	rows, err := s.database.db.Query(query)
+	//fmt.Println("list", query)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var m model.SaleHistoryItem
+		rows.Scan(
+			&m.ID,
+			&m.User.ID,
+			&m.User.FullName,
+			&m.User.Phone,
+			&m.User.Status,
+			&m.CreatedAt,
+			&m.UpdatedAt,
+			&m.Price,
+			&m.Quantity,
+		)
+
+		res.Items = append(res.Items, m)
+	}
+
+	return res, nil
+}
+
 func (s *SaleContract) CheckFile(f model.SaleOneFilter) (*model.ReportFileData, error) {
 	if !f.CheckIDData() {
 		return nil, store.ErrRequiredDataNotFount

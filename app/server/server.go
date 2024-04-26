@@ -46,6 +46,7 @@ func (s *server) init() {
 	user.HandleFunc("/delete", s.handleUserDelete()).Methods("POST")
 	// sale
 	sale := private.PathPrefix("/sale").Subrouter()
+	sale.HandleFunc("/history", s.handleSaleHistory()).Methods("POST")
 	sale.HandleFunc("/check-file", s.handleSaleCheckFile()).Methods("POST")
 	sale.HandleFunc("/get", s.handleSaleGet()).Methods("POST")
 	sale.HandleFunc("/one", s.handleSaleOne()).Methods("POST")
