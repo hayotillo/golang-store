@@ -240,7 +240,6 @@ func (d *PeriodData) CheckPeriodData() bool {
 }
 
 func (d *PeriodData) PeriodWhere(table string) string {
-	fmt.Println("period", d.PeriodStart, d.PeriodEnd)
 	if len(d.PeriodStart) < 20 {
 		d.PeriodStart = misc.DateParseToFull(d.PeriodStart)
 	}
