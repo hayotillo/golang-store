@@ -101,12 +101,12 @@ func (s *SaleContract) CheckFile(f model.SaleOneFilter) (*model.ReportFileData, 
 	}
 
 	pdf.SetFont("Arial", "B", 17)
-	pdf.CellFormat(380, 30, "Maxsulot", "1", 0, "C", false, 0, "")
-	pdf.CellFormat(80, 30, "Narx", "1", 0, "C", false, 0, "")
-	pdf.CellFormat(80, 30, "Summa", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(300, 30, "Maxsulot", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(120, 30, "Narx", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(120, 30, "Summa", "1", 0, "C", false, 0, "")
 
 	// row title style
-	pdf.SetFont("Arial", "B", 15)
+	pdf.SetFont("Arial", "B", 12)
 	priceSum := 0
 	quantitySum := 0
 	for _, item := range products.Items {
@@ -114,16 +114,16 @@ func (s *SaleContract) CheckFile(f model.SaleOneFilter) (*model.ReportFileData, 
 		pdf.Ln(-1)
 		price := saleProduct.PriceInt()
 		quantity := saleProduct.QuantityInt()
-		pdf.CellFormat(380, 30, saleProduct.Name, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(80, 30, fmt.Sprintf("%vx%v", price, quantity), "1", 0, "R", false, 0, "")
-		pdf.CellFormat(80, 30, strconv.Itoa(price*quantity), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(300, 25, saleProduct.Name, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(120, 25, fmt.Sprintf("%vx%v", price, quantity), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(120, 25, strconv.Itoa(price*quantity), "1", 0, "R", false, 0, "")
 		priceSum += price
 		quantitySum += quantity
 	}
 	pdf.Ln(50)
-	pdf.CellFormat(380, 30, "Jami:", "1", 0, "L", false, 0, "")
-	pdf.CellFormat(80, 30, strconv.Itoa(priceSum*quantitySum), "1", 0, "R", false, 0, "")
-	pdf.CellFormat(80, 30, strconv.Itoa(quantitySum), "1", 0, "R", false, 0, "")
+	pdf.CellFormat(300, 25, "Jami:", "1", 0, "L", false, 0, "")
+	pdf.CellFormat(120, 25, strconv.Itoa(priceSum*quantitySum), "1", 0, "R", false, 0, "")
+	pdf.CellFormat(120, 25, strconv.Itoa(quantitySum), "1", 0, "R", false, 0, "")
 	// add time
 	pdf.Ln(50)
 	pdf.CellFormat(540, 30, fmt.Sprintf("Sana: %s", misc.CurrentTimeFull()[:19]), "", 0, "C", false, 0, "")
