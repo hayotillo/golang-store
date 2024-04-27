@@ -250,7 +250,6 @@ func (d *PeriodData) PeriodWhere(table string) string {
 	if len(d.PeriodStart) == 0 {
 		return ""
 	}
-	fmt.Println("period", d.PeriodStart, d.PeriodEnd)
 	return fmt.Sprintf("%[1]s.updated_at::timestamp >= '%[2]s' AND %[1]s.updated_at::timestamp <= '%[3]s'",
 		table, d.PeriodStart, d.PeriodEnd)
 }
