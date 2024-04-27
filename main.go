@@ -51,7 +51,7 @@ func loadConfig() model.AppConfig {
 		"DB_NAME",
 		"DB_USER",
 		"DB_HOST",
-		"DB_PORT",
+		"DB_PUBLIC_PORT",
 		"DB_PASSWORD",
 		"BIND_HOST",
 		"BIND_PORT",
@@ -64,7 +64,7 @@ func loadConfig() model.AppConfig {
 	config.DbName = cnf["DB_NAME"]
 	config.DbUser = cnf["DB_USER"]
 	config.DbHost = cnf["DB_HOST"]
-	config.DbPort = cnf["DB_PORT"]
+	config.DbPort = cnf["DB_PUBLIC_PORT"]
 	config.DbPassword = cnf["DB_PASSWORD"]
 	// server config
 	config.BindHost = cnf["BIND_HOST"]
