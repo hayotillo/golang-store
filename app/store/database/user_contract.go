@@ -80,6 +80,9 @@ func (r *UserContract) List(f model.UserListFilter) (*model.ListData, error) {
 }
 
 func (r *UserContract) Save(d model.User) (*model.User, error) {
+	if !d.CheckInsertData() && !d.CheckUpdateData() {
+		return nil, store.ErrRequiredDataNotFount
+	}
 	m := &model.User{}
 
 	if !d.CheckIDData() {
@@ -120,6 +123,9 @@ func (r *UserContract) Save(d model.User) (*model.User, error) {
 	_, err := r.database.db.Exec(query, p...)
 	//fmt.Println("user save", err, query, p)
 	if err != nil {
+		if err.Error() == misc.SqlConstraintErrorStr("users_phone_key") {
+			return nil, store.ErrRecordAlreadyExists
+		}
 		return m, err
 	}
 

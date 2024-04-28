@@ -127,10 +127,6 @@ func (s *server) handleUserSave() http.HandlerFunc {
 		}
 
 		u := r.Context().Value(s.jwtSecretKey).(*model.User)
-		if !data.CheckIDData() && !data.CheckUserStatusData() {
-			s.error(w, r, http.StatusBadRequest, store.ErrRequiredDataNotFount)
-			return
-		}
 		if !u.IsAdmin() && data.Status == "admin" {
 			data.Status = ""
 		}

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,6 +14,17 @@ type User struct {
 	Token           string `json:"token,omitempty"`
 	Password        string `json:"-" schema:"password"`
 	EncryptPassword string `json:"-" schema:"-"`
+}
+
+func (d *User) CheckInsertData() bool {
+	fmt.Println("check", d.CheckFullNameData(), d.CheckPhoneData(), d.CheckPasswordData())
+	return d.CheckFullNameData() && d.CheckPhoneData() && d.CheckPasswordData()
+}
+
+func (d *User) CheckUpdateData() bool {
+	return d.CheckIDData() && (d.CheckFullNameData() ||
+		d.CheckPhoneData() ||
+		d.CheckPasswordData())
 }
 
 type UserStatusFilterData struct {
@@ -55,7 +67,7 @@ func (d *User) ToPublic() User {
 func (d *StatusData) CheckUserStatusData() bool {
 	res := false
 
-	for _, s := range []string{"admin", "moderator", "company", "user", "manager"} {
+	for _, s := range []string{"admin", "user"} {
 		if s == d.Status {
 			return true
 		}
@@ -90,7 +102,7 @@ func (d *User) CheckPasswordData() bool {
 
 func (d *User) CheckFullNameData() bool {
 	length := len(d.FullName)
-	return length > 3 && length < 50
+	return length > 2 && length < 50
 }
 
 func (d *User) CheckUserStatusData() bool {

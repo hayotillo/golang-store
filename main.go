@@ -20,6 +20,7 @@ func main() {
 	config := loadConfig()
 	if config.Debug {
 		config.DbHost = "localhost"
+		config.DbPort = config.DbPublicPort
 	}
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		config.DbUser, config.DbPassword, config.DbHost, config.DbPort, config.DbName)
@@ -51,6 +52,7 @@ func loadConfig() model.AppConfig {
 		"DB_NAME",
 		"DB_USER",
 		"DB_HOST",
+		"DB_PORT",
 		"DB_PUBLIC_PORT",
 		"DB_PASSWORD",
 		"BIND_HOST",
@@ -64,7 +66,8 @@ func loadConfig() model.AppConfig {
 	config.DbName = cnf["DB_NAME"]
 	config.DbUser = cnf["DB_USER"]
 	config.DbHost = cnf["DB_HOST"]
-	config.DbPort = cnf["DB_PUBLIC_PORT"]
+	config.DbPort = cnf["DB_PORT"]
+	config.DbPublicPort = cnf["DB_PUBLIC_PORT"]
 	config.DbPassword = cnf["DB_PASSWORD"]
 	// server config
 	config.BindHost = cnf["BIND_HOST"]

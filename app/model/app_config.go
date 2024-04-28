@@ -5,6 +5,7 @@ type AppConfig struct {
 	DbUser       string
 	DbName       string
 	DbPort       string
+	DbPublicPort string
 	DbHost       string
 	DbPassword   string
 	BindHost     string
